@@ -26,7 +26,7 @@ mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.Visible = false
 mainFrame.Parent = gui
 
--- Criar botão no menu
+-- Criar botão
 local function createMenuButton(text, posY)
 	local btn = Instance.new("TextButton")
 	btn.Size = UDim2.new(1, -20, 0, 40)
@@ -42,7 +42,7 @@ end
 
 -- Botões
 local btnFly = createMenuButton("Ativar FLY", 10)
-local btnESP = createMenuButton("Ativar ESP", 60)
+local btnESP = createMenuButton("Ativar ESP BONE", 60)
 local btn3 = createMenuButton("Opção 3", 110)
 
 -- Alternar visibilidade do menu
@@ -92,76 +92,101 @@ btnFly.MouseButton1Click:Connect(function()
 	end
 end)
 
--- === ESP ===
-local espEnabled = false
-local espObjects = {}
+-- === ESP BONE ===
+local espBoneEnabled = false
+local espLines = {}
 
-local function createESP(plr)
+local bones = {
+	{"Head", "UpperTorso"},
+	{"UpperTorso", "LowerTorso"},
+	{"UpperTorso", "LeftUpperArm"},
+	{"LeftUpperArm", "LeftLowerArm"},
+	{"LeftLowerArm", "LeftHand"},
+	{"UpperTorso", "RightUpperArm"},
+	{"RightUpperArm", "RightLowerArm"},
+	{"RightLowerArm", "RightHand"},
+	{"LowerTorso", "LeftUpperLeg"},
+	{"LeftUpperLeg", "LeftLowerLeg"},
+	{"LeftLowerLeg", "LeftFoot"},
+	{"LowerTorso", "RightUpperLeg"},
+	{"RightUpperLeg", "RightLowerLeg"},
+	{"RightLowerLeg", "RightFoot"},
+}
+
+local function createBoneESP(plr)
 	if plr == player then return end
-	if not plr.Character or not plr.Character:FindFirstChild("HumanoidRootPart") then return end
+	if not plr.Character then return end
 
-	local tag = Drawing.new("Text")
-	tag.Visible = false
-	tag.Center = true
-	tag.Outline = true
-	tag.Font = 2
-	tag.Size = 13
-	tag.Color = Color3.new(1, 1, 1)
-	tag.Text = plr.Name
+	espLines[plr] = {}
 
-	espObjects[plr] = tag
-end
-
-local function updateESP()
-	for plr, tag in pairs(espObjects) do
-		if plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-			local pos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(plr.Character.HumanoidRootPart.Position)
-			if onScreen then
-				tag.Position = Vector2.new(pos.X, pos.Y)
-				tag.Visible = true
-			else
-				tag.Visible = false
-			end
-		else
-			tag.Visible = false
-		end
+	for _, bone in pairs(bones) do
+		local line = Drawing.new("Line")
+		line.Thickness = 2
+		line.Color = Color3.new(1, 1, 1)
+		line.Visible = false
+		table.insert(espLines[plr], {part1 = bone[1], part2 = bone[2], line = line})
 	end
 end
 
-local function removeESP(plr)
-	if espObjects[plr] then
-		espObjects[plr]:Remove()
-		espObjects[plr] = nil
+local function removeBoneESP(plr)
+	if espLines[plr] then
+		for _, item in pairs(espLines[plr]) do
+			item.line:Remove()
+		end
+		espLines[plr] = nil
 	end
 end
 
 game:GetService("RunService").RenderStepped:Connect(function()
-	if espEnabled then
-		updateESP()
+	if not espBoneEnabled then return end
+
+	for plr, lines in pairs(espLines) do
+		if plr.Character then
+			for _, boneData in pairs(lines) do
+				local part1 = plr.Character:FindFirstChild(boneData.part1)
+				local part2 = plr.Character:FindFirstChild(boneData.part2)
+
+				if part1 and part2 then
+					local p1, on1 = workspace.CurrentCamera:WorldToViewportPoint(part1.Position)
+					local p2, on2 = workspace.CurrentCamera:WorldToViewportPoint(part2.Position)
+					if on1 and on2 then
+						boneData.line.From = Vector2.new(p1.X, p1.Y)
+						boneData.line.To = Vector2.new(p2.X, p2.Y)
+						boneData.line.Visible = true
+					else
+						boneData.line.Visible = false
+					end
+				else
+					boneData.line.Visible = false
+				end
+			end
+		end
 	end
 end)
 
 game.Players.PlayerAdded:Connect(function(plr)
 	plr.CharacterAdded:Connect(function()
 		wait(1)
-		if espEnabled then
-			createESP(plr)
+		if espBoneEnabled then
+			createBoneESP(plr)
 		end
 	end)
 end)
 
 btnESP.MouseButton1Click:Connect(function()
-	espEnabled = not espEnabled
-	btnESP.Text = espEnabled and "Desativar ESP" or "Ativar ESP"
+	espBoneEnabled = not espBoneEnabled
+	btnESP.Text = espBoneEnabled and "Desativar ESP BONE" or "Ativar ESP BONE"
 
-	if espEnabled then
+	if espBoneEnabled then
 		for _, plr in pairs(game.Players:GetPlayers()) do
-			createESP(plr)
+			createBoneESP(plr)
 		end
 	else
-		for _, v in pairs(espObjects) do
-			v:Remove()
+		for _, lines in pairs(espLines) do
+			for _, item in pairs(lines) do
+				item.line:Remove()
+			end
 		end
-		espObjects = {}
+		espLines = {}
 	end
 end)
