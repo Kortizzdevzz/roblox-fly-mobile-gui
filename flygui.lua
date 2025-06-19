@@ -20,8 +20,8 @@ toggleButton.Parent = gui
 
 -- Painel principal
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 200, 0, 180)
-mainFrame.Position = UDim2.new(0, 70, 0.5, -90)
+mainFrame.Size = UDim2.new(0, 200, 0, 220)
+mainFrame.Position = UDim2.new(0, 70, 0.5, -110)
 mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 mainFrame.Visible = false
 mainFrame.Parent = gui
@@ -44,6 +44,7 @@ end
 local btnFly = createMenuButton("Ativar FLY", 10)
 local btnESP = createMenuButton("Ativar ESP BONE", 60)
 local btn3 = createMenuButton("Opção 3", 110)
+local btnEject = createMenuButton("Ejetar Script", 160)
 
 -- Alternar visibilidade do menu
 toggleButton.MouseButton1Click:Connect(function()
@@ -189,4 +190,22 @@ btnESP.MouseButton1Click:Connect(function()
 		end
 		espLines = {}
 	end
+end)
+
+-- === Ejetar Script ===
+btnEject.MouseButton1Click:Connect(function()
+	-- Para o fly se estiver ativo
+	flying = false
+	
+	-- Desativa ESP e remove linhas
+	espBoneEnabled = false
+	for _, lines in pairs(espLines) do
+		for _, item in pairs(lines) do
+			item.line:Remove()
+		end
+	end
+	espLines = {}
+	
+	-- Remove GUI
+	gui:Destroy()
 end)
