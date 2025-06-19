@@ -2,7 +2,7 @@ local player = game.Players.LocalPlayer
 local mouse = player:GetMouse()
 local UIS = game:GetService("UserInputService")
 
--- GUI
+-- GUIi
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "FlyMenu"
 gui.ResetOnSpawn = false
