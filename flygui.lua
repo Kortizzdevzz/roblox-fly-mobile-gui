@@ -1,92 +1,76 @@
--- GUI Roblox: Botão flutuante + menu com FLY e 2 opções extras
-local player = game.Players.LocalPlayer
-local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-gui.Name = "MainFlyMenu"
+-- ESP Variables
+local espEnabled = false
+local espObjects = {}
 
--- Botão flutuante para abrir/fechar
-local openButton = Instance.new("ImageButton")
-openButton.Size = UDim2.new(0, 50, 0, 50)
-openButton.Position = UDim2.new(0, 20, 0.3, 0)
-openButton.BackgroundTransparency = 1
-openButton.Image = "rbxassetid://6035047409" -- ícone de engrenagem
-openButton.Parent = gui
+local function createESP(player)
+	if player == game.Players.LocalPlayer then return end
+	if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
 
--- Frame do menu principal
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 200, 0, 180)
-mainFrame.Position = UDim2.new(0, 80, 0.3, 0)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.BorderSizePixel = 0
-mainFrame.Visible = false
-mainFrame.Parent = gui
+	local box = Drawing.new("Text")
+	box.Visible = false
+	box.Center = true
+	box.Outline = true
+	box.Font = 2
+	box.Size = 13
+	box.Color = Color3.new(1, 1, 1)
+	box.Text = player.Name
 
--- Título
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-title.Text = "Painel de Comandos"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.Parent = mainFrame
-
--- Função para criar botão
-local function createButton(name, order)
-	local button = Instance.new("TextButton")
-	button.Size = UDim2.new(1, -20, 0, 40)
-	button.Position = UDim2.new(0, 10, 0, 40 + ((order - 1) * 45))
-	button.Text = name
-	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	button.TextColor3 = Color3.new(1, 1, 1)
-	button.Font = Enum.Font.Gotham
-	button.TextSize = 14
-	button.Parent = mainFrame
-	return button
+	espObjects[player] = box
 end
 
--- Botões
-local flyButton = createButton("FLY", 1)
-local opt2 = createButton("Opção 2", 2)
-local opt3 = createButton("Opção 3", 3)
-
--- Controle de FLY
-local flying = false
-local bodyGyro, bodyVel
-local speed = 50
-
-local function toggleFly()
-	local character = player.Character or player.CharacterAdded:Wait()
-	local hrp = character:WaitForChild("HumanoidRootPart")
-
-	if flying then
-		flying = false
-		if bodyGyro then bodyGyro:Destroy() end
-		if bodyVel then bodyVel:Destroy() end
-	else
-		flying = true
-		bodyGyro = Instance.new("BodyGyro", hrp)
-		bodyGyro.P = 9e4
-		bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-		bodyGyro.CFrame = hrp.CFrame
-
-		bodyVel = Instance.new("BodyVelocity", hrp)
-		bodyVel.Velocity = Vector3.new(0, 0, 0)
-		bodyVel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-
-		coroutine.wrap(function()
-			while flying do
-				game:GetService("RunService").RenderStepped:Wait()
-				bodyGyro.CFrame = workspace.CurrentCamera.CFrame
-				bodyVel.Velocity = workspace.CurrentCamera.CFrame.LookVector * speed
+local function updateESP()
+	for player, box in pairs(espObjects) do
+		if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+			local pos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
+			if onScreen then
+				box.Position = Vector2.new(pos.X, pos.Y)
+				box.Visible = true
+			else
+				box.Visible = false
 			end
-		end)()
+		else
+			box.Visible = false
+		end
 	end
 end
 
--- Funções dos botões
-flyButton.MouseButton1Click:Connect(toggleFly)
+local function removeESP(player)
+	if espObjects[player] then
+		espObjects[player]:Remove()
+		espObjects[player] = nil
+	end
+end
 
--- Abrir/Fechar menu
-openButton.MouseButton1Click:Connect(function()
-	mainFrame.Visible = not mainFrame.Visible
+-- Atualizar ESP a cada frame
+game:GetService("RunService").RenderStepped:Connect(function()
+	if espEnabled then
+		updateESP()
+	end
+end)
+
+-- Monitorar novos players
+game.Players.PlayerAdded:Connect(function(plr)
+	plr.CharacterAdded:Connect(function()
+		wait(1)
+		if espEnabled then
+			createESP(plr)
+		end
+	end)
+end)
+
+-- Botão ESP (Opção 2)
+btn2.MouseButton1Click:Connect(function()
+	espEnabled = not espEnabled
+	btn2.Text = espEnabled and "Desativar ESP" or "Ativar ESP"
+
+	if espEnabled then
+		for _, plr in pairs(game.Players:GetPlayers()) do
+			createESP(plr)
+		end
+	else
+		for _, box in pairs(espObjects) do
+			box:Remove()
+		end
+		espObjects = {}
+	end
 end)
