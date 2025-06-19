@@ -2,7 +2,7 @@ local player = game.Players.LocalPlayer
 local mouse = player:GetMouse()
 local UIS = game:GetService("UserInputService")
 
--- GUIi
+-- GUI
 local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
 gui.Name = "FlyMenu"
 gui.ResetOnSpawn = false
@@ -68,10 +68,10 @@ UIS.InputChanged:Connect(function(input)
 	end
 end)
 
--- Painel principal
+-- Painel principal maior para não cortar as opções
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 240, 0, 280)
-mainFrame.Position = UDim2.new(0, 85, 0.5, -140)
+mainFrame.Size = UDim2.new(0, 280, 0, 320)  -- maior largura e altura
+mainFrame.Position = UDim2.new(0, 85, 0.5, -160) -- reposicionado para manter centralizado
 mainFrame.BackgroundColor3 = Color3.fromRGB(245, 245, 245) -- cinza claro
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false
@@ -83,8 +83,8 @@ mainCorner.CornerRadius = UDim.new(0, 12)
 
 -- Sombra atrás do painel (frame preto transparente)
 local shadow = Instance.new("Frame", mainFrame)
-shadow.Size = UDim2.new(1, 6, 1, 6)
-shadow.Position = UDim2.new(0, -3, 0, -3)
+shadow.Size = UDim2.new(1, 8, 1, 8)  -- um pouco maior para acompanhar o aumento
+shadow.Position = UDim2.new(0, -4, 0, -4)
 shadow.BackgroundColor3 = Color3.new(0, 0, 0)
 shadow.BackgroundTransparency = 0.6
 shadow.ZIndex = 0
@@ -128,11 +128,11 @@ local function createMenuButton(text, posY)
 	return btn
 end
 
--- Botões
+-- Botões com espaçamento maior para caber no painel
 local btnFly = createMenuButton("Ativar FLY", 60)
-local btnESP = createMenuButton("Ativar ESP BONE", 120)
-local btn3 = createMenuButton("Opção 3", 180)
-local btnEject = createMenuButton("Ejetar Script", 240)
+local btnESP = createMenuButton("Ativar ESP BONE", 130)
+local btn3 = createMenuButton("Opção 3", 200)
+local btnEject = createMenuButton("Ejetar Script", 270)
 
 -- Alternar visibilidade do menu
 toggleButton.MouseButton1Click:Connect(function()
