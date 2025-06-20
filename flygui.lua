@@ -1,95 +1,77 @@
--- Cria o ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FlyPanel"
-screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+local player = game.Players.LocalPlayer
+local char = player.Character or player.CharacterAdded:Wait()
+local humanoid = char:WaitForChild("Humanoid")
+local hrp = char:WaitForChild("HumanoidRootPart")
 
--- Cria o Frame do painel
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 100)
-frame.Position = UDim2.new(0, 20, 0, 100)
-frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-frame.Active = true
-frame.Draggable = true
-frame.Parent = screenGui
+-- Cria o painel de ativação do fly
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "FlyPanel"
 
--- Cria botão de minimizar
-local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Size = UDim2.new(0, 30, 0, 30)
-minimizeBtn.Position = UDim2.new(1, -35, 0, 5)
-minimizeBtn.Text = "-"
-minimizeBtn.Parent = frame
-
--- Cria botão FLY
-local flyBtn = Instance.new("TextButton")
+local flyBtn = Instance.new("TextButton", gui)
 flyBtn.Size = UDim2.new(0, 120, 0, 40)
-flyBtn.Position = UDim2.new(0.5, -60, 0.5, -20)
+flyBtn.Position = UDim2.new(0, 20, 0, 130)
 flyBtn.Text = "FLY"
 flyBtn.BackgroundColor3 = Color3.fromRGB(70, 180, 255)
-flyBtn.Parent = frame
+flyBtn.TextColor3 = Color3.fromRGB(255,255,255)
+flyBtn.Font = Enum.Font.SourceSansBold
+flyBtn.TextScaled = true
+flyBtn.Active = true
 
--- Variáveis de estado
 local flying = false
-local minimized = false
+local flySpeed = 60
 
--- Função de voo
-function fly()
-    local plr = game.Players.LocalPlayer
-    local char = plr.Character or plr.CharacterAdded:Wait()
-    local hrp = char:WaitForChild("HumanoidRootPart")
-    local humanoid = char:WaitForChild("Humanoid")
-    local bodyGyro = Instance.new("BodyGyro", hrp)
-    local bodyVelocity = Instance.new("BodyVelocity", hrp)
+local bodyVel = nil
+local connection = nil
 
-    bodyGyro.P = 9e4
-    bodyGyro.MaxTorque = Vector3.new(9e4, 9e4, 9e4)
-    bodyGyro.CFrame = hrp.CFrame
-    bodyVelocity.Velocity = Vector3.new(0,0,0)
-    bodyVelocity.MaxForce = Vector3.new(9e4, 9e4, 9e4)
+local function startFly()
+    if not bodyVel then
+        bodyVel = Instance.new("BodyVelocity")
+        bodyVel.MaxForce = Vector3.new(1e5,1e5,1e5)
+        bodyVel.Velocity = Vector3.new(0,0,0)
+        bodyVel.Parent = hrp
+    end
+    humanoid.PlatformStand = true
 
-    local UIS = game:GetService("UserInputService")
-    local speed = 50
-
-    local flyingConnection
-    flyingConnection = game:GetService("RunService").RenderStepped:Connect(function()
-        local camCF = workspace.CurrentCamera.CFrame
-        local moveVec = Vector3.new()
-        if UIS:IsKeyDown(Enum.KeyCode.W) then moveVec = moveVec + camCF.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.S) then moveVec = moveVec - camCF.LookVector end
-        if UIS:IsKeyDown(Enum.KeyCode.A) then moveVec = moveVec - camCF.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.D) then moveVec = moveVec + camCF.RightVector end
-        if UIS:IsKeyDown(Enum.KeyCode.Space) then moveVec = moveVec + camCF.UpVector end
-        if UIS:IsKeyDown(Enum.KeyCode.LeftControl) then moveVec = moveVec - camCF.UpVector end
-        bodyVelocity.Velocity = moveVec.Unit * speed
-        bodyGyro.CFrame = camCF
-        if not flying then
-            flyingConnection:Disconnect()
-            bodyGyro:Destroy()
-            bodyVelocity:Destroy()
+    connection = game:GetService("RunService").RenderStepped:Connect(function()
+        -- Usa o MoveDirection do Humanoid, que é preenchido pelo joystick no mobile
+        local moveDir = humanoid.MoveDirection
+        if moveDir.Magnitude > 0 then
+            bodyVel.Velocity = Vector3.new(moveDir.X, 0, moveDir.Z).Unit * flySpeed + Vector3.new(0, 2, 0)
+        else
+            bodyVel.Velocity = Vector3.new(0, 2, 0) -- Mantém o player no ar
         end
     end)
 end
 
--- Botão FLY
+local function stopFly()
+    humanoid.PlatformStand = false
+    if bodyVel then
+        bodyVel:Destroy()
+        bodyVel = nil
+    end
+    if connection then
+        connection:Disconnect()
+        connection = nil
+    end
+end
+
 flyBtn.MouseButton1Click:Connect(function()
     flying = not flying
     if flying then
         flyBtn.Text = "UNFLY"
-        fly()
+        startFly()
     else
         flyBtn.Text = "FLY"
+        stopFly()
     end
 end)
 
--- Botão de minimizar
-minimizeBtn.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    if minimized then
-        flyBtn.Visible = false
-        frame.Size = UDim2.new(0, 200, 0, 40)
-        minimizeBtn.Text = "+"
-    else
-        flyBtn.Visible = true
-        frame.Size = UDim2.new(0, 200, 0, 100)
-        minimizeBtn.Text = "-"
-    end
+-- Garante que o fly para se o personagem morrer ou for resetado
+player.CharacterAdded:Connect(function(newChar)
+    char = newChar
+    humanoid = char:WaitForChild("Humanoid")
+    hrp = char:WaitForChild("HumanoidRootPart")
+    stopFly()
+    flying = false
+    flyBtn.Text = "FLY"
 end)
