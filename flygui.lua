@@ -182,9 +182,9 @@ local function startFlying()
         
         local velocity = Vector3.new(0, 0, 0)
         
-        -- Movimento baseado na câmera
+        -- Movimento baseado na câmera (corrigido)
         if moveVector.Magnitude > 0 then
-            velocity = velocity + (lookVector * moveVector.Z + rightVector * moveVector.X) * flySpeed
+            velocity = velocity + (lookVector * -moveVector.Z + rightVector * moveVector.X) * flySpeed
         end
         
         -- Controles de subir/descer
