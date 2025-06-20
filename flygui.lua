@@ -1,7 +1,7 @@
 --[[
-    Roblox LocalScript: HUB com várias funções, incluindo Fly
-    Layout moderno, botão abrir/fechar (mobile e PC), e título do HUB piscando em RGB!
-    Créditos "Source By Tentacions" em RGB dentro do painel.
+    Roblox LocalScript: HUB com Fly, Créditos RGB, botão abrir/fechar (PC e Mobile)
+    e opção de EJETAR O SCRIPT (fecha e desliga o HUB completamente).
+    Créditos: "Source By Tentacions" em RGB dentro do painel.
     Coloque este LocalScript em StarterPlayerScripts ou StarterCharacterScripts.
 --]]
 
@@ -18,6 +18,9 @@ local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 local flying = false
 local flySpeed = 50
 local bodyVelocity = nil
+
+-- Referência para todos os elementos criados (para ejetar)
+local objectsToDestroy = {}
 
 -- Função de Fly
 local function startFly()
@@ -57,6 +60,7 @@ local gui = Instance.new("ScreenGui")
 gui.Name = "MeuHub"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
+table.insert(objectsToDestroy, gui)
 
 -- Sombra
 local shadow = Instance.new("Frame")
@@ -111,9 +115,10 @@ title.ZIndex = 2
 title.Parent = mainFrame
 
 -- Efeito RGB piscando no título
+local titleRGB = true
 spawn(function()
     local t = 0
-    while true do
+    while titleRGB and title and title.Parent do
         t = t + 0.05
         local r = math.abs(math.sin(t)) * 255
         local g = math.abs(math.sin(t + 2)) * 255
@@ -180,6 +185,44 @@ flyButton.MouseButton1Click:Connect(function()
     end
 end)
 
+-- Botão EJETAR SCRIPT
+local ejectButton = Instance.new("TextButton")
+ejectButton.Size = UDim2.new(0, 130, 0, 44)
+ejectButton.BackgroundColor3 = Color3.fromRGB(217, 54, 54)
+ejectButton.Text = "⛔ Ejetar Script"
+ejectButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ejectButton.Font = Enum.Font.FredokaOne
+ejectButton.TextSize = 20
+ejectButton.Parent = buttonHolder
+ejectButton.AutoButtonColor = true
+ejectButton.LayoutOrder = 2
+
+local ejectCorner = Instance.new("UICorner")
+ejectCorner.CornerRadius = UDim.new(0, 12)
+ejectCorner.Parent = ejectButton
+
+local ejectStroke = Instance.new("UIStroke")
+ejectStroke.Color = Color3.fromRGB(255, 100, 100)
+ejectStroke.Thickness = 1.5
+ejectStroke.Transparency = 0.15
+ejectStroke.Parent = ejectButton
+
+-- Lógica do botão EJETAR SCRIPT
+ejectButton.MouseButton1Click:Connect(function()
+    -- Para o RGB dos títulos
+    titleRGB = false
+    -- Para o Fly se estiver ativo
+    stopFly()
+    -- Desconecta todos os eventos, destrói todos os objetos do HUB
+    for _, obj in ipairs(objectsToDestroy) do
+        if obj and obj.Parent then
+            obj:Destroy()
+        end
+    end
+    -- Destroi componentes criados fora da lista (caso o script seja colado em partes)
+    if gui and gui.Parent then gui:Destroy() end
+end)
+
 -- Créditos RGB
 local creditLabel = Instance.new("TextLabel")
 creditLabel.Size = UDim2.new(1, -24, 0, 28)
@@ -193,9 +236,10 @@ creditLabel.TextStrokeTransparency = 0.5
 creditLabel.ZIndex = 2
 creditLabel.Parent = mainFrame
 
+local creditRGB = true
 spawn(function()
     local t = 0
-    while true do
+    while creditRGB and creditLabel and creditLabel.Parent do
         t = t + 0.04
         local r = math.abs(math.sin(t)) * 255
         local g = math.abs(math.sin(t + 2)) * 255
@@ -281,6 +325,7 @@ hint.TextSize = 20
 hint.TextStrokeTransparency = 0.8
 hint.Parent = gui
 hint.ZIndex = 10
+table.insert(objectsToDestroy, hint)
 
 task.delay(6, function()
     if hint and hint.Parent then
