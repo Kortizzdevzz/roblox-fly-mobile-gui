@@ -1,12 +1,14 @@
 --[[
     Roblox LocalScript: HUB com várias funções, incluindo Fly
-    Agora com botão para abrir/fechar o HUB em dispositivos mobile!
-    Coloque este LocalScript em StarterPlayerScripts ou StarterCharacterScripts
+    Layout moderno e bonito, com transições, sombras e arredondamento.
+    Inclui botão para abrir/fechar HUB (mobile e PC).
+    Coloque este LocalScript em StarterPlayerScripts ou StarterCharacterScripts.
 --]]
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
@@ -44,7 +46,6 @@ local function stopFly()
     end
 end
 
--- Função para garantir que para o fly ao morrer/reaparecer
 player.CharacterAdded:Connect(function(char)
     character = char
     humanoidRootPart = character:WaitForChild("HumanoidRootPart")
@@ -57,67 +58,153 @@ gui.Name = "MeuHub"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
--- Fundo do painel
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 320, 0, 200)
-mainFrame.Position = UDim2.new(0.5, -160, 0.5, -100)
-mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-mainFrame.BackgroundTransparency = 0.1
-mainFrame.Visible = false
-mainFrame.Parent = gui
+-- Sombra
+local shadow = Instance.new("Frame")
+shadow.Size = UDim2.new(0, 350, 0, 240)
+shadow.Position = UDim2.new(0.5, -175, 0.5, -120)
+shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+shadow.BackgroundTransparency = 0.4
+shadow.BorderSizePixel = 0
+shadow.ZIndex = 0
+shadow.Visible = false
+shadow.Parent = gui
+shadow.AnchorPoint = Vector2.new(0.5, 0.5)
+shadow.ClipsDescendants = false
+shadow.Name = "Shadow"
+shadow.Rotation = 3
+-- Sombra arredondada
+local shadowCorner = Instance.new("UICorner")
+shadowCorner.CornerRadius = UDim.new(0, 24)
+shadowCorner.Parent = shadow
 
+-- Fundo do painel principal
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 330, 0, 220)
+mainFrame.Position = UDim2.new(0.5, -165, 0.5, -110)
+mainFrame.BackgroundColor3 = Color3.fromRGB(34, 39, 54)
+mainFrame.BackgroundTransparency = 0.05
+mainFrame.BorderSizePixel = 0
+mainFrame.Visible = false
+mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+mainFrame.Parent = gui
+mainFrame.ZIndex = 1
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 18)
+mainCorner.Parent = mainFrame
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Thickness = 2
+mainStroke.Color = Color3.fromRGB(60, 110, 200)
+mainStroke.Transparency = 0.25
+mainStroke.Parent = mainFrame
+
+-- Título estilizado
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 40)
+title.Size = UDim2.new(1, 0, 0, 48)
 title.Position = UDim2.new(0, 0, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "Meu HUB"
-title.Font = Enum.Font.SourceSansBold
-title.TextSize = 28
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Text = "🌐 Meu HUB"
+title.Font = Enum.Font.FredokaOne
+title.TextSize = 32
+title.TextColor3 = Color3.fromRGB(169, 206, 255)
+title.ZIndex = 2
 title.Parent = mainFrame
+
+-- Linha decorativa
+local decoLine = Instance.new("Frame")
+decoLine.Size = UDim2.new(1, -40, 0, 2)
+decoLine.Position = UDim2.new(0, 20, 0, 46)
+decoLine.BackgroundColor3 = Color3.fromRGB(60, 110, 200)
+decoLine.BorderSizePixel = 0
+decoLine.ZIndex = 2
+decoLine.Parent = mainFrame
+
+-- Container dos botões
+local buttonHolder = Instance.new("Frame")
+buttonHolder.Size = UDim2.new(1, -40, 0, 150)
+buttonHolder.Position = UDim2.new(0, 20, 0, 60)
+buttonHolder.BackgroundTransparency = 1
+buttonHolder.ZIndex = 2
+buttonHolder.Parent = mainFrame
+
+local buttonLayout = Instance.new("UIListLayout")
+buttonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+buttonLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+buttonLayout.SortOrder = Enum.SortOrder.LayoutOrder
+buttonLayout.Padding = UDim.new(0, 16)
+buttonLayout.Parent = buttonHolder
 
 -- Botão do Fly
 local flyButton = Instance.new("TextButton")
-flyButton.Size = UDim2.new(0, 120, 0, 40)
-flyButton.Position = UDim2.new(0, 20, 0, 60)
-flyButton.Text = "Ativar Fly"
-flyButton.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+flyButton.Size = UDim2.new(0, 130, 0, 44)
+flyButton.BackgroundColor3 = Color3.fromRGB(54, 104, 217)
+flyButton.Text = "🛩️ Ativar Fly"
 flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-flyButton.Font = Enum.Font.SourceSansBold
-flyButton.TextSize = 20
-flyButton.Parent = mainFrame
+flyButton.Font = Enum.Font.FredokaOne
+flyButton.TextSize = 22
+flyButton.Parent = buttonHolder
+flyButton.AutoButtonColor = true
+flyButton.LayoutOrder = 1
 
--- Exemplo: botão extra para expandir o HUB
+local flyCorner = Instance.new("UICorner")
+flyCorner.CornerRadius = UDim.new(0, 12)
+flyCorner.Parent = flyButton
+
+local flyStroke = Instance.new("UIStroke")
+flyStroke.Color = Color3.fromRGB(80, 150, 255)
+flyStroke.Thickness = 1.5
+flyStroke.Transparency = 0.15
+flyStroke.Parent = flyButton
+
+-- Botão de Info
 local infoButton = Instance.new("TextButton")
-infoButton.Size = UDim2.new(0, 120, 0, 40)
-infoButton.Position = UDim2.new(0, 20, 0, 110)
-infoButton.Text = "Info"
-infoButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+infoButton.Size = UDim2.new(0, 130, 0, 44)
+infoButton.BackgroundColor3 = Color3.fromRGB(98, 114, 164)
+infoButton.Text = "ℹ️ Info"
 infoButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-infoButton.Font = Enum.Font.SourceSansBold
-infoButton.TextSize = 20
-infoButton.Parent = mainFrame
+infoButton.Font = Enum.Font.FredokaOne
+infoButton.TextSize = 22
+infoButton.Parent = buttonHolder
+infoButton.AutoButtonColor = true
+infoButton.LayoutOrder = 2
 
+local infoCorner = Instance.new("UICorner")
+infoCorner.CornerRadius = UDim.new(0, 12)
+infoCorner.Parent = infoButton
+
+local infoStroke = Instance.new("UIStroke")
+infoStroke.Color = Color3.fromRGB(169, 206, 255)
+infoStroke.Thickness = 1.5
+infoStroke.Transparency = 0.2
+infoStroke.Parent = infoButton
+
+-- Label de Info
 local infoLabel = Instance.new("TextLabel")
-infoLabel.Size = UDim2.new(0, 140, 0, 40)
-infoLabel.Position = UDim2.new(0, 160, 0, 110)
-infoLabel.BackgroundTransparency = 0.5
-infoLabel.BackgroundColor3 = Color3.fromRGB(70, 70, 80)
+infoLabel.Size = UDim2.new(0, 130, 0, 44)
+infoLabel.Position = UDim2.new(0, 160, 0, 50)
+infoLabel.BackgroundColor3 = Color3.fromRGB(44, 49, 74)
+infoLabel.BackgroundTransparency = 0.08
 infoLabel.Text = ""
 infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-infoLabel.Font = Enum.Font.SourceSans
+infoLabel.Font = Enum.Font.FredokaOne
 infoLabel.TextSize = 18
 infoLabel.Visible = false
-infoLabel.Parent = mainFrame
+infoLabel.ZIndex = 2
+infoLabel.Parent = buttonHolder
+
+local infoLabelCorner = Instance.new("UICorner")
+infoLabelCorner.CornerRadius = UDim.new(0, 12)
+infoLabelCorner.Parent = infoLabel
 
 -- Lógica do botão Fly
 flyButton.MouseButton1Click:Connect(function()
     if flying then
         stopFly()
-        flyButton.Text = "Ativar Fly"
+        flyButton.Text = "🛩️ Ativar Fly"
     else
         startFly()
-        flyButton.Text = "Desativar Fly"
+        flyButton.Text = "🛑 Desativar Fly"
     end
 end)
 
@@ -131,45 +218,87 @@ infoButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Botão para abrir/fechar o HUB (Mobile Friendly)
+-- Botão para abrir/fechar o HUB (Mobile + PC)
 local openCloseButton = Instance.new("ImageButton")
-openCloseButton.Size = UDim2.new(0, 60, 0, 60)
-openCloseButton.Position = UDim2.new(0, 20, 0.5, -30)
-openCloseButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
-openCloseButton.BackgroundTransparency = 0.2
-openCloseButton.Image = "rbxassetid://7733960981" -- Ícone de menu/hambúrguer, pode trocar por outro
+openCloseButton.Size = UDim2.new(0, 56, 0, 56)
+openCloseButton.Position = UDim2.new(0, 24, 0.5, -28)
+openCloseButton.BackgroundColor3 = Color3.fromRGB(44, 49, 74)
+openCloseButton.BackgroundTransparency = 0.1
+openCloseButton.Image = "rbxassetid://7733960981" -- Ícone de menu/hambúrguer
 openCloseButton.Parent = gui
+openCloseButton.ZIndex = 10
 
--- Efeito visual no botão
+local openCloseCorner = Instance.new("UICorner")
+openCloseCorner.CornerRadius = UDim.new(1, 0)
+openCloseCorner.Parent = openCloseButton
+
+local openCloseStroke = Instance.new("UIStroke")
+openCloseStroke.Color = Color3.fromRGB(80, 150, 255)
+openCloseStroke.Thickness = 1
+openCloseStroke.Transparency = 0.25
+openCloseStroke.Parent = openCloseButton
+
+-- Efeito de hover no botão
 openCloseButton.MouseEnter:Connect(function()
-    openCloseButton.BackgroundColor3 = Color3.fromRGB(100, 180, 255)
+    openCloseButton.BackgroundColor3 = Color3.fromRGB(80, 110, 170)
 end)
 openCloseButton.MouseLeave:Connect(function()
-    openCloseButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180)
+    openCloseButton.BackgroundColor3 = Color3.fromRGB(44, 49, 74)
 end)
+
+local function abrirHub()
+    shadow.Visible = true
+    mainFrame.Visible = true
+    -- Transição suave
+    mainFrame.Position = UDim2.new(0.5, -165, 0.5, -150)
+    shadow.Position = UDim2.new(0.5, -175, 0.5, -160)
+    TweenService:Create(mainFrame, TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -165, 0.5, -110)}):Play()
+    TweenService:Create(shadow, TweenInfo.new(0.20, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -175, 0.5, -120)}):Play()
+end
+
+local function fecharHub()
+    TweenService:Create(mainFrame, TweenInfo.new(0.18, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -165, 0.5, -150)}):Play()
+    TweenService:Create(shadow, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -175, 0.5, -160)}):Play()
+    task.wait(0.18)
+    mainFrame.Visible = false
+    shadow.Visible = false
+end
 
 openCloseButton.MouseButton1Click:Connect(function()
-    mainFrame.Visible = not mainFrame.Visible
+    if mainFrame.Visible then
+        fecharHub()
+    else
+        abrirHub()
+    end
 end)
 
--- Tecla para abrir/fechar HUB: tecla H (PC)
 UserInputService.InputBegan:Connect(function(input, processed)
     if not processed and input.KeyCode == Enum.KeyCode.H then
-        mainFrame.Visible = not mainFrame.Visible
+        if mainFrame.Visible then
+            fecharHub()
+        else
+            abrirHub()
+        end
     end
 end)
 
 -- Dica para o usuário
 local hint = Instance.new("TextLabel")
-hint.Size = UDim2.new(0, 350, 0, 30)
-hint.Position = UDim2.new(0.5, -175, 1, -40)
+hint.Size = UDim2.new(0, 400, 0, 34)
+hint.Position = UDim2.new(0.5, -200, 1, -44)
 hint.BackgroundTransparency = 1
-hint.Text = "Pressione H (PC) ou use o botão azul (Mobile) para abrir o HUB"
-hint.TextColor3 = Color3.fromRGB(255,255,255)
-hint.Font = Enum.Font.SourceSansItalic
+hint.Text = "Pressione H (PC) ou use o botão azul (Mobile/PC) para abrir o HUB"
+hint.TextColor3 = Color3.fromRGB(180,210,255)
+hint.Font = Enum.Font.FredokaOne
 hint.TextSize = 20
+hint.TextStrokeTransparency = 0.8
 hint.Parent = gui
+hint.ZIndex = 10
 
-task.delay(7, function()
-    hint:Destroy()
+task.delay(6, function()
+    if hint and hint.Parent then
+        TweenService:Create(hint, TweenInfo.new(0.5), {TextTransparency = 1}):Play()
+        task.wait(0.6)
+        hint:Destroy()
+    end
 end)
