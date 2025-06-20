@@ -103,7 +103,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 48)
 title.Position = UDim2.new(0, 0, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "🌐 Meu HUB"
+title.Text = "Win Easy Obby's"
 title.Font = Enum.Font.FredokaOne
 title.TextSize = 32
 title.TextColor3 = Color3.fromRGB(169, 206, 255)
@@ -151,7 +151,7 @@ buttonLayout.Parent = buttonHolder
 local flyButton = Instance.new("TextButton")
 flyButton.Size = UDim2.new(0, 130, 0, 44)
 flyButton.BackgroundColor3 = Color3.fromRGB(54, 104, 217)
-flyButton.Text = "🛩️ Ativar Fly"
+flyButton.Text = "Ativar Fly"
 flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 flyButton.Font = Enum.Font.FredokaOne
 flyButton.TextSize = 22
@@ -173,10 +173,10 @@ flyStroke.Parent = flyButton
 flyButton.MouseButton1Click:Connect(function()
     if flying then
         stopFly()
-        flyButton.Text = "🛩️ Ativar Fly"
+        flyButton.Text = "Ativar Fly"
     else
         startFly()
-        flyButton.Text = "🛑 Desativar Fly"
+        flyButton.Text = "Desativar Fly"
     end
 end)
 
@@ -249,7 +249,7 @@ local hint = Instance.new("TextLabel")
 hint.Size = UDim2.new(0, 400, 0, 34)
 hint.Position = UDim2.new(0.5, -200, 1, -44)
 hint.BackgroundTransparency = 1
-hint.Text = "Pressione H (PC) ou use o botão azul (Mobile/PC) para abrir o HUB"
+hint.Text = "(PC) Pressione H para abrir! (Mobile/PC) Clique no Icone para abrir o HUB."
 hint.TextColor3 = Color3.fromRGB(180,210,255)
 hint.Font = Enum.Font.FredokaOne
 hint.TextSize = 20
