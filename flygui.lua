@@ -50,7 +50,6 @@ local function createButton(text)
 
 	btn.MouseButton1Click:Connect(function()
 		print("Executando:", text)
-		-- aqui você pode colocar comandos reais
 	end)
 
 	return btn
@@ -63,6 +62,41 @@ toggleBtn.Position = UDim2.new(0, 10, 0, 10)
 toggleBtn.Image = "rbxassetid://6031094678" -- ícone de engrenagem
 toggleBtn.BackgroundTransparency = 1
 toggleBtn.Name = "AbrirFechar"
+
+-- Arrastar o botão
+local dragging, dragInput, dragStart, startPos
+
+toggleBtn.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = toggleBtn.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+toggleBtn.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+		dragInput = input
+	end
+end)
+
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		local delta = input.Position - dragStart
+		toggleBtn.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
 
 -- Criar painel
 local frame = createMainFrame()
