@@ -1,6 +1,7 @@
 --[[
     Roblox LocalScript: HUB com várias funções, incluindo Fly
     Layout moderno, botão abrir/fechar (mobile e PC), e título do HUB piscando em RGB!
+    Opção INFO removida conforme solicitado.
     Coloque este LocalScript em StarterPlayerScripts ou StarterCharacterScripts.
 --]]
 
@@ -168,46 +169,6 @@ flyStroke.Thickness = 1.5
 flyStroke.Transparency = 0.15
 flyStroke.Parent = flyButton
 
--- Botão de Info
-local infoButton = Instance.new("TextButton")
-infoButton.Size = UDim2.new(0, 130, 0, 44)
-infoButton.BackgroundColor3 = Color3.fromRGB(98, 114, 164)
-infoButton.Text = "ℹ️ Info"
-infoButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-infoButton.Font = Enum.Font.FredokaOne
-infoButton.TextSize = 22
-infoButton.Parent = buttonHolder
-infoButton.AutoButtonColor = true
-infoButton.LayoutOrder = 2
-
-local infoCorner = Instance.new("UICorner")
-infoCorner.CornerRadius = UDim.new(0, 12)
-infoCorner.Parent = infoButton
-
-local infoStroke = Instance.new("UIStroke")
-infoStroke.Color = Color3.fromRGB(169, 206, 255)
-infoStroke.Thickness = 1.5
-infoStroke.Transparency = 0.2
-infoStroke.Parent = infoButton
-
--- Label de Info
-local infoLabel = Instance.new("TextLabel")
-infoLabel.Size = UDim2.new(0, 130, 0, 44)
-infoLabel.Position = UDim2.new(0, 160, 0, 50)
-infoLabel.BackgroundColor3 = Color3.fromRGB(44, 49, 74)
-infoLabel.BackgroundTransparency = 0.08
-infoLabel.Text = ""
-infoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-infoLabel.Font = Enum.Font.FredokaOne
-infoLabel.TextSize = 18
-infoLabel.Visible = false
-infoLabel.ZIndex = 2
-infoLabel.Parent = buttonHolder
-
-local infoLabelCorner = Instance.new("UICorner")
-infoLabelCorner.CornerRadius = UDim.new(0, 12)
-infoLabelCorner.Parent = infoLabel
-
 -- Lógica do botão Fly
 flyButton.MouseButton1Click:Connect(function()
     if flying then
@@ -216,16 +177,6 @@ flyButton.MouseButton1Click:Connect(function()
     else
         startFly()
         flyButton.Text = "🛑 Desativar Fly"
-    end
-end)
-
--- Lógica do botão Info
-infoButton.MouseButton1Click:Connect(function()
-    infoLabel.Visible = not infoLabel.Visible
-    if infoLabel.Visible then
-        infoLabel.Text = "Exemplo de HUB\nScript by Kortizzdevzz"
-    else
-        infoLabel.Text = ""
     end
 end)
 
