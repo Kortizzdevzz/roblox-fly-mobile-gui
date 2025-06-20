@@ -1,115 +1,90 @@
 local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-local TweenService = game:GetService("TweenService")
+local gui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+gui.Name = "PainelExecutor"
+gui.ResetOnSpawn = false
 
--- GUI principal
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "PainelUI"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+-- Estilo da Janela
+local function createMainFrame()
+	local frame = Instance.new("Frame")
+	frame.Size = UDim2.new(0, 350, 0, 300)
+	frame.Position = UDim2.new(0.5, -175, 0.5, -150)
+	frame.AnchorPoint = Vector2.new(0.5, 0.5)
+	frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+	frame.BorderSizePixel = 0
+	frame.Visible = false
+	frame.Name = "MainFrame"
+	frame.BackgroundTransparency = 0.1
 
--- Tela de carregamento
-local loadingFrame = Instance.new("Frame", screenGui)
-loadingFrame.Size = UDim2.new(1, 0, 1, 0)
-loadingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+	local corner = Instance.new("UICorner", frame)
+	corner.CornerRadius = UDim.new(0, 12)
 
-local loadingText = Instance.new("TextLabel", loadingFrame)
-loadingText.Size = UDim2.new(0.4, 0, 0.1, 0)
-loadingText.Position = UDim2.new(0.3, 0, 0.45, 0)
-loadingText.BackgroundTransparency = 1
-loadingText.Text = "Carregando..."
-loadingText.TextColor3 = Color3.new(1, 1, 1)
-loadingText.TextScaled = true
-loadingText.Font = Enum.Font.SourceSansBold
+	local title = Instance.new("TextLabel", frame)
+	title.Text = "Executor - Painel"
+	title.Size = UDim2.new(1, 0, 0, 40)
+	title.BackgroundTransparency = 1
+	title.TextColor3 = Color3.fromRGB(255, 255, 255)
+	title.Font = Enum.Font.GothamBold
+	title.TextScaled = true
 
--- Botão de abrir painel
-local toggleButton = Instance.new("ImageButton", screenGui)
-toggleButton.Size = UDim2.new(0, 50, 0, 50)
-toggleButton.Position = UDim2.new(0, 10, 0.5, -25)
-toggleButton.Image = "rbxassetid://6035198845" -- Ícone engrenagem
-toggleButton.BackgroundTransparency = 1
-toggleButton.Visible = false
+	local layout = Instance.new("UIListLayout", frame)
+	layout.Padding = UDim.new(0, 6)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- Painel
-local panel = Instance.new("Frame", screenGui)
-panel.Size = UDim2.new(0, 300, 0, 250)
-panel.Position = UDim2.new(0.5, -150, 1.5, 0) -- Começa fora da tela
-panel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-panel.Visible = false
-panel.BorderSizePixel = 0
-panel.ClipsDescendants = true
-
--- Barra de título
-local titleBar = Instance.new("Frame", panel)
-titleBar.Size = UDim2.new(1, 0, 0, 30)
-titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-
-local titleText = Instance.new("TextLabel", titleBar)
-titleText.Size = UDim2.new(1, 0, 1, 0)
-titleText.Text = "Painel de Funções"
-titleText.BackgroundTransparency = 1
-titleText.TextColor3 = Color3.new(1, 1, 1)
-titleText.TextScaled = true
-titleText.Font = Enum.Font.GothamBold
-
--- Texto de feedback
-local feedbackText = Instance.new("TextLabel", screenGui)
-feedbackText.Size = UDim2.new(0.5, 0, 0.07, 0)
-feedbackText.Position = UDim2.new(0.25, 0, 0.9, 0)
-feedbackText.BackgroundTransparency = 0.3
-feedbackText.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-feedbackText.TextColor3 = Color3.new(1, 1, 1)
-feedbackText.TextScaled = true
-feedbackText.Visible = false
-feedbackText.Font = Enum.Font.Gotham
-
-local function showMessage(text)
-	feedbackText.Text = text
-	feedbackText.Visible = true
-	task.delay(2, function()
-		feedbackText.Visible = false
-	end)
+	return frame
 end
 
--- Botões com ações
-for i = 1, 4 do
-	local button = Instance.new("TextButton", panel)
-	button.Size = UDim2.new(0.8, 0, 0, 40)
-	button.Position = UDim2.new(0.1, 0, 0, 40 + (i - 1) * 50)
-	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-	button.Text = "Função " .. i
-	button.TextColor3 = Color3.new(1, 1, 1)
-	button.Font = Enum.Font.Gotham
-	button.TextScaled = true
-	button.AutoButtonColor = true
+-- Botão genérico
+local function createButton(text)
+	local btn = Instance.new("TextButton")
+	btn.Size = UDim2.new(0.8, 0, 0, 40)
+	btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	btn.Text = text
+	btn.Font = Enum.Font.Gotham
+	btn.TextScaled = true
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.AutoButtonColor = true
 
-	button.MouseButton1Click:Connect(function()
-		showMessage("Executou função " .. i)
+	local corner = Instance.new("UICorner", btn)
+	corner.CornerRadius = UDim.new(0, 10)
+
+	btn.MouseButton1Click:Connect(function()
+		print("Executando:", text)
+		-- aqui você pode colocar comandos reais
 	end)
+
+	return btn
 end
 
--- Animações de abrir/fechar
-local open = false
-local openTween = TweenService:Create(panel, TweenInfo.new(0.3), {Position = UDim2.new(0.5, -150, 0.5, -125)})
-local closeTween = TweenService:Create(panel, TweenInfo.new(0.3), {Position = UDim2.new(0.5, -150, 1.5, 0)})
+-- Botão de abrir/fechar
+local toggleBtn = Instance.new("ImageButton", gui)
+toggleBtn.Size = UDim2.new(0, 50, 0, 50)
+toggleBtn.Position = UDim2.new(0, 10, 0, 10)
+toggleBtn.Image = "rbxassetid://6031094678" -- ícone de engrenagem
+toggleBtn.BackgroundTransparency = 1
+toggleBtn.Name = "AbrirFechar"
 
-toggleButton.MouseButton1Click:Connect(function()
-	if open then
-		closeTween:Play()
-		open = false
+-- Criar painel
+local frame = createMainFrame()
+frame.Parent = gui
+
+-- Adicionar botões ao painel
+for i = 1, 5 do
+	local btn = createButton("Função " .. i)
+	btn.Parent = frame
+end
+
+-- Animação abrir/fechar
+local tweenService = game:GetService("TweenService")
+local openTween = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+toggleBtn.MouseButton1Click:Connect(function()
+	frame.Visible = not frame.Visible
+	if frame.Visible then
+		tweenService:Create(frame, openTween, {Size = UDim2.new(0, 350, 0, 300)}):Play()
 	else
-		panel.Visible = true
-		openTween:Play()
-		open = true
+		tweenService:Create(frame, openTween, {Size = UDim2.new(0, 0, 0, 0)}):Play()
+		wait(0.3)
+		frame.Visible = false
 	end
-end)
-
--- Simula o carregamento
-task.spawn(function()
-	for i = 1, 60 do
-		loadingText.Text = "Carregando" .. string.rep(".", i % 4)
-		task.wait(0.05)
-	end
-	loadingFrame:Destroy()
-	toggleButton.Visible = true
 end)
