@@ -1,7 +1,7 @@
 --[[
     Roblox LocalScript: HUB com várias funções, incluindo Fly
     Layout moderno, botão abrir/fechar (mobile e PC), e título do HUB piscando em RGB!
-    Opção INFO removida conforme solicitado.
+    Créditos "Source By Tentacions" em RGB dentro do painel.
     Coloque este LocalScript em StarterPlayerScripts ou StarterCharacterScripts.
 --]]
 
@@ -103,7 +103,7 @@ local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 48)
 title.Position = UDim2.new(0, 0, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "Win Easy Obby's"
+title.Text = "🌐 Meu HUB"
 title.Font = Enum.Font.FredokaOne
 title.TextSize = 32
 title.TextColor3 = Color3.fromRGB(169, 206, 255)
@@ -134,7 +134,7 @@ decoLine.Parent = mainFrame
 
 -- Container dos botões
 local buttonHolder = Instance.new("Frame")
-buttonHolder.Size = UDim2.new(1, -40, 0, 150)
+buttonHolder.Size = UDim2.new(1, -40, 0, 110)
 buttonHolder.Position = UDim2.new(0, 20, 0, 60)
 buttonHolder.BackgroundTransparency = 1
 buttonHolder.ZIndex = 2
@@ -151,7 +151,7 @@ buttonLayout.Parent = buttonHolder
 local flyButton = Instance.new("TextButton")
 flyButton.Size = UDim2.new(0, 130, 0, 44)
 flyButton.BackgroundColor3 = Color3.fromRGB(54, 104, 217)
-flyButton.Text = "Ativar Fly"
+flyButton.Text = "🛩️ Ativar Fly"
 flyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 flyButton.Font = Enum.Font.FredokaOne
 flyButton.TextSize = 22
@@ -173,10 +173,35 @@ flyStroke.Parent = flyButton
 flyButton.MouseButton1Click:Connect(function()
     if flying then
         stopFly()
-        flyButton.Text = "Ativar Fly"
+        flyButton.Text = "🛩️ Ativar Fly"
     else
         startFly()
-        flyButton.Text = "Desativar Fly"
+        flyButton.Text = "🛑 Desativar Fly"
+    end
+end)
+
+-- Créditos RGB
+local creditLabel = Instance.new("TextLabel")
+creditLabel.Size = UDim2.new(1, -24, 0, 28)
+creditLabel.Position = UDim2.new(0, 12, 1, -34)
+creditLabel.BackgroundTransparency = 1
+creditLabel.Text = "Source By Tentacions"
+creditLabel.Font = Enum.Font.FredokaOne
+creditLabel.TextSize = 22
+creditLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+creditLabel.TextStrokeTransparency = 0.5
+creditLabel.ZIndex = 2
+creditLabel.Parent = mainFrame
+
+spawn(function()
+    local t = 0
+    while true do
+        t = t + 0.04
+        local r = math.abs(math.sin(t)) * 255
+        local g = math.abs(math.sin(t + 2)) * 255
+        local b = math.abs(math.sin(t + 4)) * 255
+        creditLabel.TextColor3 = Color3.fromRGB(r, g, b)
+        wait(0.04)
     end
 end)
 
@@ -249,7 +274,7 @@ local hint = Instance.new("TextLabel")
 hint.Size = UDim2.new(0, 400, 0, 34)
 hint.Position = UDim2.new(0.5, -200, 1, -44)
 hint.BackgroundTransparency = 1
-hint.Text = "(PC) Pressione H para abrir! (Mobile/PC) Clique no Icone para abrir o HUB."
+hint.Text = "Pressione H (PC) ou use o botão azul (Mobile/PC) para abrir o HUB"
 hint.TextColor3 = Color3.fromRGB(180,210,255)
 hint.Font = Enum.Font.FredokaOne
 hint.TextSize = 20
