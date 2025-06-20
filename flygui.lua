@@ -1,101 +1,123 @@
--- Script Roblox: FLY para Mobile/PC SEM BOTÕES VIRTUAIS
--- Execute este script em um executor. Aperte 'F' para ativar/desativar o fly no PC.
--- No mobile, use o joystick para mover e toque no canto superior direito para alternar o fly.
+--[[
+    Roblox Local Script: Fly (Mobile/PC sem botões virtuais de direção)
+    - Ative/desative com um botão (mobile)
+    - Ao ativar, o personagem voa para frente continuamente (direção da câmera)
+    - Movimente para os lados apenas girando a tela/câmera
+    - Sem botões virtuais de direção
+
+    Coloque este script em StarterPlayerScripts.
+--]]
 
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
+local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local StarterGui = game:GetService("StarterGui")
 
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRoot = character:WaitForChild("HumanoidRootPart")
+local camera = workspace.CurrentCamera
+
 local flying = false
-local flySpeed = 60
+local flySpeed = 40
+
+-- Botão Fly para mobile
+local function createFlyButton()
+    -- Só exibe no mobile
+    if not UIS.TouchEnabled then return nil end
+
+    local button = Instance.new("TextButton")
+    button.Name = "FlyToggleButton"
+    button.Text = "FLY"
+    button.Size = UDim2.new(0, 100, 0, 50)
+    button.Position = UDim2.new(1, -110, 1, -60)
+    button.AnchorPoint = Vector2.new(0, 0)
+    button.BackgroundTransparency = 0.3
+    button.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.TextScaled = true
+    button.Font = Enum.Font.SourceSansBold
+    button.ZIndex = 10
+    button.Parent = StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false) and player.PlayerGui or player.PlayerGui
+
+    return button
+end
+
+-- Fly loop
 local flyConn
-
--- Função para criar BodyVelocity
-local function createBV(char)
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return nil end
-    local bv = Instance.new("BodyVelocity")
-    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-    bv.Velocity = Vector3.new(0,0,0)
-    bv.Parent = hrp
-    return bv
-end
-
--- Função de ativar o fly
-local function startFly()
-    if flying then return end
+local function startFlying()
+    if flyConn then flyConn:Disconnect() end
     flying = true
-    local char = player.Character
-    if not char then return end
-    local humanoid = char:FindFirstChildOfClass("Humanoid")
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp or not humanoid then return end
 
-    local bv = createBV(char)
-    humanoid.PlatformStand = true
+    flyConn = RunService.RenderStepped:Connect(function(dt)
+        if not flying then return end
+        if not character or not character.Parent then return end
+        if not humanoidRoot or not humanoidRoot.Parent then return end
 
-    flyConn = RunService.Heartbeat:Connect(function()
-        if not flying or not bv or not bv.Parent then return end
-        local moveDir = humanoid.MoveDirection
-        local cam = workspace.CurrentCamera
-        local vel = Vector3.new(0,0,0)
+        -- Direção da câmera
+        local camCF = camera.CFrame
+        local moveDir = camCF.LookVector
 
-        if moveDir.Magnitude > 0 then
-            vel = ((cam.CFrame.LookVector * -moveDir.Z) + (cam.CFrame.RightVector * moveDir.X)) * flySpeed
-        end
-
-        -- PC: Espaço = subir, Shift = descer
-        if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-            vel = vel + Vector3.new(0, flySpeed, 0)
-        end
-        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-            vel = vel + Vector3.new(0, -flySpeed, 0)
-        end
-
-        bv.Velocity = vel
+        -- Move suavemente para frente
+        humanoidRoot.Velocity = moveDir * flySpeed
+        -- Mantém sempre no ar
+        humanoidRoot.AssemblyLinearVelocity = moveDir * flySpeed
     end)
 end
 
--- Função de desativar o fly
-local function stopFly()
+local function stopFlying()
     flying = false
-    if flyConn then flyConn:Disconnect() flyConn = nil end
-    local char = player.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        local bv = char.HumanoidRootPart:FindFirstChild("BodyVelocity")
-        if bv then bv:Destroy() end
+    if flyConn then flyConn:Disconnect() end
+    -- Para o movimento ao desligar
+    if humanoidRoot then
+        humanoidRoot.Velocity = Vector3.new(0, 0, 0)
+        humanoidRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
     end
-    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-    if humanoid then humanoid.PlatformStand = false end
 end
 
--- Atalho PC: Tecla F alterna fly
-UserInputService.InputBegan:Connect(function(input, gp)
-    if gp then return end
+-- PC: Use "F" para ativar/desativar o fly
+UIS.InputBegan:Connect(function(input, gpe)
+    if gpe then return end
+    if UIS.TouchEnabled then return end -- só PC
     if input.KeyCode == Enum.KeyCode.F then
-        if flying then stopFly() else startFly() end
+        if not flying then
+            startFlying()
+        else
+            stopFlying()
+        end
     end
 end)
 
--- Atalho Mobile: Tocar no canto superior direito alterna fly
-if UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled then
-    local touched = false
-    UserInputService.TouchStarted:Connect(function(touch, gp)
-        if touched then return end
-        if touch.Position.X > (workspace.CurrentCamera.ViewportSize.X - 80) and touch.Position.Y < 80 then
-            touched = true
-            if flying then stopFly() else startFly() end
-            wait(0.5)
-            touched = false
+-- Mobile: Botão
+local button = createFlyButton()
+if button then
+    button.MouseButton1Click:Connect(function()
+        if not flying then
+            button.Text = "UNFLY"
+            startFlying()
+        else
+            button.Text = "FLY"
+            stopFlying()
         end
     end)
 end
 
--- Parar o fly se morrer
-player.CharacterRemoving:Connect(function()
-    stopFly()
+-- Garante que ao respawn funcione
+player.CharacterAdded:Connect(function(char)
+    character = char
+    humanoidRoot = character:WaitForChild("HumanoidRootPart")
+    stopFlying()
+    if button then button.Text = "FLY" end
 end)
 
-print("FLY carregado! Tecla F (PC) ou toque no canto direito (mobile) para ativar/desativar.")
+-- Dica para PC
+if not UIS.TouchEnabled then
+    StarterGui:SetCore("ChatMakeSystemMessage", {
+        Text = "[Fly] Pressione 'F' para ativar/desativar o Fly!";
+        Color = Color3.new(0, 1, 1);
+        Font = Enum.Font.SourceSansBold;
+        FontSize = Enum.FontSize.Size24;
+    })
+end
+
+-- Observação: Não há botões virtuais de direção, só o botão de ativar/desativar fly no mobile.
