@@ -1,7 +1,6 @@
 --[[
     Roblox LocalScript: HUB com várias funções, incluindo Fly
-    Layout moderno e bonito, com transições, sombras e arredondamento.
-    Inclui botão para abrir/fechar HUB (mobile e PC).
+    Layout moderno, botão abrir/fechar (mobile e PC), e título do HUB piscando em RGB!
     Coloque este LocalScript em StarterPlayerScripts ou StarterCharacterScripts.
 --]]
 
@@ -72,7 +71,6 @@ shadow.AnchorPoint = Vector2.new(0.5, 0.5)
 shadow.ClipsDescendants = false
 shadow.Name = "Shadow"
 shadow.Rotation = 3
--- Sombra arredondada
 local shadowCorner = Instance.new("UICorner")
 shadowCorner.CornerRadius = UDim.new(0, 24)
 shadowCorner.Parent = shadow
@@ -99,7 +97,7 @@ mainStroke.Color = Color3.fromRGB(60, 110, 200)
 mainStroke.Transparency = 0.25
 mainStroke.Parent = mainFrame
 
--- Título estilizado
+-- Título RGB (PISCANDO)
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 48)
 title.Position = UDim2.new(0, 0, 0, 0)
@@ -110,6 +108,19 @@ title.TextSize = 32
 title.TextColor3 = Color3.fromRGB(169, 206, 255)
 title.ZIndex = 2
 title.Parent = mainFrame
+
+-- Efeito RGB piscando no título
+spawn(function()
+    local t = 0
+    while true do
+        t = t + 0.05
+        local r = math.abs(math.sin(t)) * 255
+        local g = math.abs(math.sin(t + 2)) * 255
+        local b = math.abs(math.sin(t + 4)) * 255
+        title.TextColor3 = Color3.fromRGB(r, g, b)
+        wait(0.04)
+    end
+end)
 
 -- Linha decorativa
 local decoLine = Instance.new("Frame")
